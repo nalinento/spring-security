@@ -1,0 +1,38 @@
+server:
+  port: 8080
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/test
+    username: postgres
+    password: root
+    driverClassName: org.postgresql.Driver
+  security:
+    oauth2:
+      client:
+        registration:
+          api-client-oidc:
+            provider: spring
+            clientId: api-client
+            clientSecret: secret
+            authorizationGrantType: authorization_code
+            redirectUri: "http://127.0.0.1:8080/login/oauth2/code/{registrationId}"
+            scope: openid
+            clientName: api-client-oidc
+          api-client-authorization-code:
+            provider: spring
+            clientId: api-client
+            clientSecret: secret
+            authorizationGrantType: authorization_code
+            redirectUri: " http://127.0.0.1:8080/authorized"
+            scope: api.read
+            clientName: api-client-authorization-code
+        provider:
+          spring:
+            issuer-uri: http://auth-server:9000
+
