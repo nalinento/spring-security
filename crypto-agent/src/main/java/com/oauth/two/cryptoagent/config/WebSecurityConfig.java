@@ -32,16 +32,17 @@ public class WebSecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http  .cors()
+        http    .cors()
                 .and()
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
+
                 .antMatchers(WHITE_LIST).permitAll()
-                .antMatchers("api/**").authenticated()
+                .antMatchers("/api/**").authenticated()
                 .and()
                 .oauth2Login(oauth2login->
-                        oauth2login.loginPage("oauth2/authorization/api-client-oidc"))
+                        oauth2login.loginPage("/oauth2/authorization/api-client-oidc"))
                 .oauth2Client(Customizer.withDefaults());
         return http.build();
     }

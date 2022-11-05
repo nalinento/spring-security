@@ -1,15 +1,17 @@
 server:
   port: 8080
 spring:
-  h2:
-    console:
-      enabled: true
-      path: /h2
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
   datasource:
-    url: jdbc:h2:file:~/db
-    username: sa
-    password:
-    driverClassName: org.h2.Driver
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/test
+    username: postgres
+    password: root
+    driverClassName: org.postgresql.Driver
   security:
     oauth2:
       client:
@@ -32,5 +34,21 @@ spring:
             clientName: api-client-authorization-code
         provider:
           spring:
-            issuer-uri: http://auth-server:9000
+            issuer-uri: http://localhost:9000
+  mail:
+    host: smtp.googlemail.com
+    port: 587
+    username: nalinento@gmail.com
+    password: pruhkkiacawxxpjr
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connection-timeout: 5000
+          timeout: 3000
+          write timeout: 5000
+      protocol: smtp
+
 

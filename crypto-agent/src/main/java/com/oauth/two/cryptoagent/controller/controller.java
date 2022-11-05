@@ -9,13 +9,17 @@ import com.oauth.two.cryptoagent.model.UserModel;
 import com.oauth.two.cryptoagent.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,7 +60,7 @@ public class controller {
         return "Verification Link sent";
     }
     @PostMapping("/resetpassword")
-    public String resetPassword(@RequestBody PasswordModel passwordModel,HttpServletRequest request){
+    public String resetPassword(@RequestBody PasswordModel passwordModel,HttpServletRequest request) throws MessagingException {
         UserDetail userDetail = userService.findUseByEmail(passwordModel.getEmail());
 
         String url =";";
@@ -64,26 +68,24 @@ public class controller {
             String token = UUID.randomUUID().toString();
             userService.createPasswordResetTokenForUser(userDetail,token);
             url=passwordResetTokenMail(userDetail,applicationUrl(request),token);
-            sentItToMail(url,passwordModel.getEmail());
+           sentItToMail(url,passwordModel.getEmail());
+            System.out.println(passwordModel.getEmail());
         }
         return url;
     }
     @Autowired
-    private JavaMailSender mailSender;
-    private void sentItToMail(String url, String email) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, "utf=8");
-            helper.setText(url,true);
-            helper.setTo(email);
-            helper.setSubject("Reset Your Password");
-            helper.setFrom("Crypto Agent");
+    private JavaMailSender javaMailSender;
+    private void sentItToMail(String url, String email) throws MessagingException {
+       MimeMessage message =javaMailSender.createMimeMessage();
+       MimeMessageHelper helper = new MimeMessageHelper(message,MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED
+       , StandardCharsets.UTF_8.name());
+       helper.setFrom("nalinento@gmail.com");
+       helper.setText(url);
+       helper.setTo(email);
 
-
-        }catch (Exception e ){
-
-        }
+       javaMailSender.send(message);
     }
+
 
     @PostMapping("savePassword")
     public String savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel){
