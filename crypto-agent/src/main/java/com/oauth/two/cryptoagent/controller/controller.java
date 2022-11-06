@@ -77,8 +77,7 @@ public class controller {
     private JavaMailSender javaMailSender;
     private void sentItToMail(String url, String email) throws MessagingException {
        MimeMessage message =javaMailSender.createMimeMessage();
-       MimeMessageHelper helper = new MimeMessageHelper(message,MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED
-       , StandardCharsets.UTF_8.name());
+       MimeMessageHelper helper = new MimeMessageHelper(message,true);
        helper.setFrom("nalinento@gmail.com");
        helper.setText(url);
        helper.setTo(email);
