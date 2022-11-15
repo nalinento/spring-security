@@ -31,20 +31,7 @@ spring:
         provider:
           spring:
             issuer-uri: http://localhost:9000
-  mail:
-    host: smtp.googlemail.com
-    port: 587
-    username: nalinento@gmail.com
-    password: pruhkkiacawxxpjr
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          connectiontimeout: 5000
-          timeout: 3000
-          writetimeout: 5000
-      protocol: smtp
+
+
 
 

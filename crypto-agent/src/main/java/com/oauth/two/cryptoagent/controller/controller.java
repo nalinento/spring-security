@@ -9,18 +9,15 @@ import com.oauth.two.cryptoagent.model.UserModel;
 import com.oauth.two.cryptoagent.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.MessagingException;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
 
 @RestController
@@ -68,25 +65,47 @@ public class controller {
             String token = UUID.randomUUID().toString();
             userService.createPasswordResetTokenForUser(userDetail,token);
             url=passwordResetTokenMail(userDetail,applicationUrl(request),token);
-           sentItToMail(url,passwordModel.getEmail());
+            sentItToMail(url,passwordModel.getEmail());
             System.out.println(passwordModel.getEmail());
         }
         return url;
     }
-    @Autowired
-    private JavaMailSender javaMailSender;
-    private void sentItToMail(String url, String email) throws MessagingException {
-       MimeMessage message =javaMailSender.createMimeMessage();
-       MimeMessageHelper helper = new MimeMessageHelper(message,true);
-       helper.setFrom("nalinento@gmail.com");
-       helper.setText(url);
-       helper.setTo(email);
 
-       javaMailSender.send(message);
+    private void sentItToMail(String url, String email) {
+        String host ="smtp.gmail.com";
+        Properties properties = System.getProperties();
+        properties.put("mail.smtp.host",host);
+        properties.put("mail.smtp.port","465");
+        properties.put("mail.smtp.ssl.enable","true");
+        properties.put("mail.smtp.auth","true");
+
+        Session session =Session.getInstance(properties, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("nalinento@gmail.com","rjxdksbcjsvcfrgj");
+
+            }
+        });
+
+        session.setDebug(true);
+
+        MimeMessage message = new MimeMessage(session);
+
+        try {
+
+            message.setFrom(new InternetAddress("Crypto-Agent"));
+            message.addRecipient(Message.RecipientType.TO,new InternetAddress(email));
+            message.setSubject("Confirm");
+            message.setText(url);
+            Transport.send(message);
+            System.out.println("send sucssesfullly");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
-    @PostMapping("savePassword")
+    @PostMapping("/savePassword")
     public String savePassword(@RequestParam("token") String token, @RequestBody PasswordModel passwordModel){
         String result = userService.validatePasswordResetToken(token);
         if (!result.equalsIgnoreCase("valid")){
@@ -111,7 +130,7 @@ public class controller {
     }
 
     private String passwordResetTokenMail(UserDetail userDetail, String applicationUrl, String token) {
-        String url = applicationUrl + "savePasswor?token="
+        String url = applicationUrl + "savePassword?token="
                 + token;
         log.info("Click the reset your password{}" ,url);
         return url;
